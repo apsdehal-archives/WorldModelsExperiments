@@ -15,19 +15,70 @@ def _process_frame(frame):
   return obs
 
 class CarRacingWrapper(CarRacing):
-  def __init__(self, full_episode=False):
+  def __init__(self, full_episode=False, start_episode=0):
     super(CarRacingWrapper, self).__init__()
     self.full_episode = full_episode
     self.observation_space = Box(low=0, high=255, shape=(SCREEN_X, SCREEN_Y, 3)) # , dtype=np.uint8
+    self.observations = np.zeros((1001, 64, 64, 3))
+    self.actions = np.zeros((1000, 3))
+    self.rewards = np.zeros((1000,))
+    self.terminals = np.zeros((1000,), dtype=bool)
+    self.iteration = 0
+    self.episode = start_episode
+    self.init = True
 
-  def _step(self, action):
-    obs, reward, done, _ = super(CarRacingWrapper, self)._step(action)
+  def step(self, action):
+    obs, reward, done, _ = super(CarRacingWrapper, self).step(action)
+
+    if action is not None:
+     self.rewards[self.iteration] = reward
+     self.terminals[self.iteration] = done
+     self.actions[self.iteration] = action
+
     if self.full_episode:
-      return _process_frame(obs), reward, False, {}
-    return _process_frame(obs), reward, done, {}
+      obs = _process_frame(obs)
+      if action is not None:
+        self.observations[self.iteration + 1] = obs
+        self.terminals[self.iteration] = False
+        self.iteration += 1
+      return obs, reward, False, {}
 
-def make_env(env_name, seed=-1, render_mode=False, full_episode=False):
-  env = CarRacingWrapper(full_episode=full_episode)
+    obs =  _process_frame(obs)
+
+    if action is not None:
+      self.observations[self.iteration + 1] = obs
+      self.iteration += 1
+
+    if self.iteration >= 1000:
+        done = True
+
+    return obs, reward, done, {}
+
+  def reset(self):
+    if not self.init:
+      print("Completed %d episode with %d iteration" % (self.episode, self.iteration))
+      self.terminals[-1] = True
+      np.savez_compressed('expert_rollouts/rollout_%d.npz' % self.episode,
+                          observations=self.observations,
+                          actions=self.actions,
+                          rewards=self.rewards,
+                          terminals=self.terminals)
+      self.episode += 1
+      self.observations.fill(0)
+      self.actions.fill(0)
+      self.rewards.fill(0)
+      self.terminals.fill(False)
+      self.iteration = 0
+
+    self.init = False
+    obs = super(CarRacingWrapper, self).reset()
+    self.observations[self.iteration] = obs
+
+    return obs
+
+
+def make_env(env_name, seed=-1, render_mode=False, full_episode=False, start_episode=0):
+  env = CarRacingWrapper(full_episode=full_episode, start_episode=start_episode)
   if (seed >= 0):
     env.seed(seed)
   '''

@@ -77,9 +77,10 @@ class Model:
 
     self.render_mode = False
 
-  def make_env(self, seed=-1, render_mode=False, full_episode=False):
+  def make_env(self, seed=-1, render_mode=False, full_episode=False, start_episode=0):
     self.render_mode = render_mode
-    self.env = make_env(self.env_name, seed=seed, render_mode=render_mode, full_episode=full_episode)
+    self.env = make_env(self.env_name, seed=seed, render_mode=render_mode, start_episode=start_episode,
+                        full_episode=full_episode)
 
   def reset(self):
     self.state = rnn_init_state(self.rnn)
@@ -109,7 +110,7 @@ class Model:
       action = np.tanh(np.dot(h, self.weight_output) + self.bias_output)
     else:
       action = np.tanh(np.dot(h, self.weight) + self.bias)
-    
+
     action[1] = (action[1]+1.0) / 2.0
     action[2] = clip(action[2])
 
@@ -132,7 +133,7 @@ class Model:
       self.weight = np.array(model_params[3:]).reshape(self.input_size, 3)
 
   def load_model(self, filename):
-    with open(filename) as f:    
+    with open(filename) as f:
       data = json.load(f)
     print('loading file %s' % (filename))
     self.data = data
@@ -193,7 +194,6 @@ def simulate(model, train_mode=False, render_mode=True, num_episode=5, seed=-1, 
 
       z, mu, logvar = model.encode_obs(obs)
       action = model.get_action(z)
-
       recording_mu.append(mu)
       recording_logvar.append(logvar)
       recording_action.append(action)
@@ -256,26 +256,31 @@ def main():
     print("filename", filename)
 
   the_seed = np.random.randint(10000)
+  # if len(sys.argv) > 3:
+  #   the_seed = int(sys.argv[3])
+  #   print("seed", the_seed)
+
+  start_episode = 0
   if len(sys.argv) > 3:
-    the_seed = int(sys.argv[3])
-    print("seed", the_seed)
+    start_episode = int(sys.argv[3])
+    print("start episode", start_episode)
 
   if (use_model):
     model = make_model()
     print('model size', model.param_count)
-    model.make_env(render_mode=render_mode)
+    model.make_env(render_mode=render_mode, start_episode=start_episode)
     model.load_model(filename)
   else:
     model = make_model(load_model=False)
     print('model size', model.param_count)
-    model.make_env(render_mode=render_mode)
+    model.make_env(render_mode=render_mode, start_episode=start_episode)
     model.init_random_model_params(stdev=np.random.rand()*0.01)
 
-  N_episode = 100
+  N_episode = 1000
   if render_mode:
     N_episode = 1
   reward_list = []
-  for i in range(N_episode):
+  for i in range(start_episode, start_episode + N_episode):
     reward, steps_taken = simulate(model,
       train_mode=False, render_mode=render_mode, num_episode=1)
     if render_mode:
