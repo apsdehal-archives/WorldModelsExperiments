@@ -9,11 +9,11 @@ from multiprocessing import Pool
 from subprocess import call
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--threads', type=int, help="Number of threads")
+parser.add_argument('--threads', type=int, default=10, help="Number of threads")
 args = parser.parse_args()
 
 def _threaded_generation(i):
-    start_episode = i * 1000
+    start_episode = i * 10
     cmd = ['xvfb-run', '-s', '"-screen 0 1400x900x24"']
     cmd += ['--server-num={}'.format(i + 1)]
     cmd += ["python", "model.py", "norender", "log/carracing.cma.16.64.best.json", str(start_episode)]
