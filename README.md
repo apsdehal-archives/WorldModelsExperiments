@@ -8,7 +8,11 @@ Inside carracing folder run:
 python generation_script.py --threads 10
 ```
 
-This will generate expert rollout trajectories in `test_rollouts` folder which can be used for CarRacing experiments in the main repo. 
+This will generate expert rollout trajectories in `expert_rollouts` folder which can be used for CarRacing experiments in the main repo. On running this script, 10 threads will be launched, each of which will generate 1000 expert rollouts leading to 10000 expert rollouts. Change number of threads and other parameters accordingly if you have more CPUs.
+
+You can change the following numbers to x / number of threads where x is total number of rollouts you want.
+- [carracing/generation_script.py#L16](carracing/generation_script.py#L16)
+- [carracing/model.py#L279](carracing/model.py#L279)
 
 Step by step instructions of reproducing [World Models](https://worldmodels.github.io/) ([pdf](https://arxiv.org/abs/1803.10122)).
 

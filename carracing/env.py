@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import gym
 
 from scipy.misc import imresize as resize
@@ -58,7 +59,9 @@ class CarRacingWrapper(CarRacing):
     if not self.init:
       print("Completed %d episode with %d iteration" % (self.episode, self.iteration))
       self.terminals[-1] = True
-      np.savez_compressed('test_rollouts/rollout_%d.npz' % self.episode,
+      os.makedirs('expert_rollouts', exist_ok=True)
+
+      np.savez_compressed('expert_rollouts/rollout_%d.npz' % self.episode,
                           observations=self.observations,
                           actions=self.actions,
                           rewards=self.rewards,

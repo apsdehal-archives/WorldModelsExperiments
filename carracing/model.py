@@ -276,11 +276,11 @@ def main():
     model.make_env(render_mode=render_mode, start_episode=start_episode)
     model.init_random_model_params(stdev=np.random.rand()*0.01)
 
-  N_episode = 10
+  N_episode = 1000
   if render_mode:
     N_episode = 1
   reward_list = []
-  for i in range(start_episode, start_episode + N_episode):
+  for i in range(start_episode, start_episode + N_episode + 1):
     reward, steps_taken = simulate(model,
       train_mode=False, render_mode=render_mode, num_episode=1)
     if render_mode:
