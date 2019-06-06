@@ -1,5 +1,15 @@
 # World Models Experiments
 
+## Generating expert trajectories for Ke et.al. 2019 (ICLR'19)
+
+Inside carracing folder run:
+
+```
+python generation_script.py --threads 10
+```
+
+This will generate expert rollout trajectories in `test_rollouts` folder which can be used for CarRacing experiments in the main repo. 
+
 Step by step instructions of reproducing [World Models](https://worldmodels.github.io/) ([pdf](https://arxiv.org/abs/1803.10122)).
 
 ![World Models](https://worldmodels.github.io/assets/world_models_card_both.png)
